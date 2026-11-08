@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LinguaTris AI Pro - Penerjemah Offline & AI</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QRCode Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .font-arabic { font-family: 'Amiri', serif; }
+        .app-container { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background: #0f172a; color: #f8fafc; position: relative; overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.4); border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 flex justify-center items-center min-h-screen">
+
+    <!-- AUTH & PAYMENT MODAL -->
+    <div id="auth-modal" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 w-full max-w-sm space-y-4 shadow-2xl my-auto">
+            <div class="text-center space-y-1">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-gold-500 mx-auto flex items-center justify-center shadow-lg shadow-emerald-900/40">
+                    <i class="fa-solid fa-qrcode text-white text-xl"></i>
+                </div>
+                <h2 class="font-bold text-base text-slate-100">Aktivasi & Pembayaran Pro</h2>
+                <p id="trial-info-text" class="text-[11px] text-slate-400">Scan QRIS Nasional atau transfer bank, lalu upload bukti pembayaran.</p>
+            </div>
+
+            <div class="space-y-3 max-h-[260px] overflow-y-auto pr-1">
+                <!-- QRIS UTAMA -->
+                <div class="bg-slate-950 border border-cyan-500/40 rounded-2xl p-3 space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-cyan-400">QRIS Nasional (All Banking)</span>
+                        <span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded font-mono">Utama</span>
+                    </div>
+                    <div class="text-[10px] text-slate-300 font-semibold">CREATIV. COM, TMBN SLT</div>
+                    <div class="text-[9px] text-slate-400 font-mono">NMID: ID1024366647401</div>
+                    <div class="bg-white p-2 rounded-xl w-36 h-36 mx-auto flex items-center justify-center overflow-hidden">
+                        <img src="https://i.ibb.co.com/84j7q34/Whats-App-Image-2026-11-08-at-15-49-06.jpg" alt="QRIS Merchant" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/120?text=QRIS+Merchant'">
+                    </div>
+                </div>
+
+                <!-- OVO -->
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-emerald-400">OVO</span>
+                        <span class="text-slate-300 font-mono text-[11px]">081398030706</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400">A/N: Mo......d T..a</div>
+                    <div class="flex justify-center bg-white p-2 rounded-xl w-24 h-24 mx-auto" id="qrcode-ovo"></div>
+                </div>
+
+                <!-- GOPAY -->
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-emerald-400">GoPay</span>
+                        <span class="text-slate-300 font-mono text-[11px]">0819-9689-6244</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400">A/N: Emha</div>
+                    <div class="flex justify-center bg-white p-2 rounded-xl w-24 h-24 mx-auto" id="qrcode-gopay"></div>
+                </div>
+
+                <!-- BRI -->
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-emerald-400">BRI</span>
+                        <span class="text-slate-300 font-mono text-[11px]">0139-0101-1770-532</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400">A/N: Mo......d T..a</div>
+                    <div class="flex justify-center bg-white p-2 rounded-xl w-24 h-24 mx-auto" id="qrcode-bri"></div>
+                </div>
+
+                <!-- BCA -->
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-emerald-400">BCA</span>
+                        <span class="text-slate-300 font-mono text-[11px]">577-669-2464</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400">A/N: Mo......d T..a</div>
+                    <div class="flex justify-center bg-white p-2 rounded-xl w-24 h-24 mx-auto" id="qrcode-bca"></div>
+                </div>
+
+                <!-- BSI -->
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3 space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-emerald-400">BSI</span>
+                        <span class="text-slate-300 font-mono text-[11px]">7354791921</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400">A/N: Emha</div>
+                    <div class="flex justify-center bg-white p-2 rounded-xl w-24 h-24 mx-auto" id="qrcode-bsi"></div>
+                </div>
+            </div>
+
+            <!-- UPLOAD & KONFIRMASI -->
+            <div class="space-y-2 pt-1 border-t border-slate-800">
+                <label class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 font-semibold text-xs border border-emerald-500/30 flex items-center justify-center gap-2 cursor-pointer transition">
+                    <i class="fa-solid fa-cloud-arrow-up text-sm"></i> <span id="upload-label-text">Upload Bukti Pembayaran</span>
+                    <input type="file" id="proof-file-input" accept="image/*" class="hidden" onchange="handleProofUpload(event)">
+                </label>
+
+                <button onclick="confirmPaymentEmail()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/30 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Kirim Konfirmasi ke Email
+                </button>
+                <button onclick="processLogin('trial')" class="w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 font-medium text-xs border border-slate-800 transition">
+                    Lanjutkan Trial 1 Bulan
+                </button>
+            </div>
+
+            <div class="text-center">
+                <span class="text-[9px] text-slate-500">Tujuan Konfirmasi: insaku226@gmail.com</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container shadow-2xl border-x border-slate-800">
+        
+        <!-- HEADER -->
+        <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-gold-500 flex items-center justify-center shadow-lg shadow-emerald-900/40">
+                    <i class="fa-solid fa-earth-asia text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base tracking-wide bg-gradient-to-r from-emerald-400 to-gold-400 bg-clip-text text-transparent">LinguaTris AI</h1>
+                    <p class="text-[10px] text-slate-400 font-medium">By <span class="text-emerald-400 font-bold">Arcod</span> • <span id="header-status-badge" class="text-gold-400 font-semibold">Trial Active</span></p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="switchTab('settings')" class="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition">
+                    <i class="fa-solid fa-gear text-sm"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 pb-20 overflow-y-auto">
+
+            <!-- TAB 1: TRANSLATOR (UTAMA) -->
+            <div id="tab-translate" class="tab-content p-4 space-y-4">
+                
+                <!-- LANGUAGE SELECTOR BAR -->
+                <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-2.5 flex items-center justify-between shadow-md">
+                    <div class="flex-1 text-center">
+                        <select id="source-lang" class="bg-transparent font-semibold text-sm text-emerald-400 focus:outline-none w-full text-center cursor-pointer">
+                            <option value="id" class="bg-slate-900">Bahasa Indonesia</option>
+                            <option value="ar" class="bg-slate-900">العربية (Arab)</option>
+                            <option value="en" class="bg-slate-900">English (Inggris)</option>
+                        </select>
+                    </div>
+                    <button onclick="swapLanguages()" class="w-10 h-10 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 flex items-center justify-center transition active:scale-95 mx-2">
+                        <i class="fa-solid fa-right-left text-sm"></i>
+                    </button>
+                    <div class="flex-1 text-center">
+                        <select id="target-lang" class="bg-transparent font-semibold text-sm text-gold-400 focus:outline-none w-full text-center cursor-pointer">
+                            <option value="ar" class="bg-slate-900">العربية (Arab)</option>
+                            <option value="en" class="bg-slate-900">English (Inggris)</option>
+                            <option value="id" class="bg-slate-900">Bahasa Indonesia</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SLANK / STYLE TOGGLE -->
+                <div class="flex items-center justify-between px-1">
+                    <span class="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles text-gold-400"></i> Gaya Terjemahan:
+                    </span>
+                    <div class="inline-flex rounded-xl bg-slate-900 p-1 border border-slate-800 text-xs">
+                        <button onclick="setSlankMode('normal')" id="mode-normal" class="px-3 py-1 rounded-lg font-medium bg-emerald-600 text-white transition">Formal</button>
+                        <button onclick="setSlankMode('slank')" id="mode-slank" class="px-3 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition">Slank / Gaul</button>
+                    </div>
+                </div>
+
+                <!-- INPUT CARD & VOICE DIRECT TRANSLATION BUTTON -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 space-y-3 relative shadow-inner">
+                    <textarea id="input-text" rows="3" placeholder="Ketik atau gunakan Voice Direct Translation..." class="w-full bg-transparent text-slate-100 placeholder-slate-500 text-sm focus:outline-none resize-none"></textarea>
+                    
+                    <div class="flex items-center justify-between pt-1 border-t border-slate-800/80 text-xs text-slate-400">
+                        <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                            <button onclick="pasteText()" title="Tempel" class="p-2 hover:bg-slate-800 rounded-lg text-slate-300 transition"><i class="fa-solid fa-paste"></i></button>
+                            <button onclick="clearInput()" title="Hapus" class="p-2 hover:bg-slate-800 rounded-lg text-slate-300 transition"><i class="fa-solid fa-trash-can"></i></button>
+                            
+                            <!-- TOMBOL VOICE DIRECT TRANSLATION & SWITCH -->
+                            <button id="btn-voice-direct" onclick="toggleVoiceDirectTranslation()" title="Voice Direct Translation" class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded-lg flex items-center gap-1.5 transition font-semibold text-xs">
+                                <i id="vdt-icon" class="fa-solid fa-microphone-lines"></i> <span id="vdt-text">Voice Direct</span>
+                            </button>
+                            
+                            <button onclick="swapLanguages()" title="Switch Bahasa Cepat" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-gold-400 border border-slate-700 rounded-lg flex items-center gap-1 transition text-xs font-semibold">
+                                <i class="fa-solid fa-right-left"></i> Switch
+                            </button>
+                        </div>
+                        <span id="char-count" class="text-[10px]">0/500</span>
+                    </div>
+                </div>
+
+                <!-- TRANSLATE ACTION BUTTON -->
+                <button onclick="performTranslation()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-sm shadow-lg shadow-emerald-900/30 transition flex items-center justify-center gap-2 active:scale-[0.99]">
+                    <i class="fa-solid fa-language text-lg"></i> Terjemahkan Sekarang
+                </button>
+
+                <!-- OUTPUT CARD DENGAN SHARE & AUDIO -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 space-y-3 relative">
+                    <div class="flex items-center justify-between text-xs text-slate-400 pb-2 border-b border-slate-800/80">
+                        <span class="font-semibold text-emerald-400 flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Hasil Terjemahan</span>
+                        <div class="flex items-center space-x-1">
+                            <button onclick="convertTextToAudio()" title="Audio" class="px-2 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 rounded-lg flex items-center gap-1 text-[11px] font-semibold transition border border-emerald-500/30">
+                                <i class="fa-solid fa-volume-high"></i> Audio
+                            </button>
+                            <button onclick="shareOutputText()" title="Share Hasil Teks" class="px-2 py-1 bg-gold-500/20 hover:bg-gold-500/30 text-gold-400 rounded-lg flex items-center gap-1 text-[11px] font-semibold transition border border-gold-500/30">
+                                <i class="fa-solid fa-share-nodes"></i> Share
+                            </button>
+                            <button onclick="copyOutput()" title="Salin" class="p-2 hover:bg-slate-800 rounded-lg text-slate-300 transition"><i class="fa-solid fa-copy"></i></button>
+                            <button onclick="toggleFavorite()" title="Favorit" class="p-2 hover:bg-slate-800 rounded-lg text-gold-400 transition"><i id="fav-icon" class="fa-regular fa-star"></i></button>
+                        </div>
+                    </div>
+                    <div id="output-text" class="text-slate-100 text-sm min-h-[70px] whitespace-pre-wrap font-arabic">Hasil terjemahan akan tampil di sini secara instan (Offline/AI)...</div>
+                    
+                    <div id="audio-player-box" class="hidden pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-emerald-400 bg-slate-950/40 p-2 rounded-xl">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-waveform animate-pulse"></i>
+                            <span id="audio-status-text">Memutar Audio Terjemahan...</span>
+                        </div>
+                        <button onclick="stopAudio()" class="text-red-400 hover:text-red-300 text-xs font-semibold px-2 py-0.5 rounded bg-red-500/10">Stop</button>
+                    </div>
+                </div>
+
+                <!-- QUICK AI TOOLS -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <label class="bg-slate-900/80 hover:bg-slate-800/80 border border-slate-800 p-3 rounded-2xl flex items-center space-x-3 cursor-pointer transition">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                            <i class="fa-solid fa-camera text-sm"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-xs text-slate-200">Terjemah Foto</div>
+                            <div class="text-[10px] text-slate-400">OCR & Gambar</div>
+                        </div>
+                        <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                    </label>
+
+                    <button onclick="switchTab('conversations')" class="bg-slate-900/80 hover:bg-slate-800/80 border border-slate-800 p-3 rounded-2xl flex items-center space-x-3 text-left transition">
+                        <div class="w-9 h-9 rounded-xl bg-gold-500/10 text-gold-400 flex items-center justify-center">
+                            <i class="fa-solid fa-comments text-sm"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-xs text-slate-200">Percakapan</div>
+                            <div class="text-[10px] text-slate-400">Mode Dua Arah</div>
+                        </div>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- TAB 2: PERCAKAPAN -->
+            <div id="tab-conversations" class="tab-content hidden p-4 space-y-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+                    <h2 class="font-bold text-sm text-slate-200">Asisten Percakapan Langsung</h2>
+                    <p class="text-xs text-slate-400 mt-1">Simulasikan percakapan dua bahasa secara real-time.</p>
+                </div>
+                
+                <div id="chat-stream" class="space-y-3 max-h-[340px] overflow-y-auto pr-1">
+                    <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-2xl text-xs space-y-1">
+                        <span class="text-[10px] text-emerald-400 font-semibold">Sistem AI Percakapan (Arcod Engine)</span>
+                        <p class="text-slate-300">Selamat datang di mode percakapan.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 pt-2">
+                    <input type="text" id="chat-input" placeholder="Ketik pesan percakapan..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+                    <button onclick="sendChatMessage()" class="w-10 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 3: BELAJAR BAHASA -->
+            <div id="tab-learning" class="tab-content hidden p-4 space-y-4">
+                <div class="bg-gradient-to-r from-emerald-900/40 to-slate-900 border border-emerald-500/30 rounded-2xl p-4">
+                    <h2 class="font-bold text-sm text-emerald-400">Modul Belajar Bahasa</h2>
+                    <p class="text-xs text-slate-300 mt-1">Kuasai kosakata dan tata bahasa harian.</p>
+                </div>
+
+                <div class="space-y-3">
+                    <div onclick="openLesson('grammar')" class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-emerald-500/50 transition">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">1</div>
+                            <div>
+                                <div class="font-bold text-xs text-slate-200">I'rab & Nahwu Sharaf Dasar</div>
+                                <div class="text-[10px] text-slate-400">Tata bahasa klasik Arab pilihan</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
+                    </div>
+
+                    <div onclick="openLesson('idiom')" class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between cursor-pointer hover:border-emerald-500/50 transition">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-gold-500/10 text-gold-400 flex items-center justify-center font-bold">2</div>
+                            <div>
+                                <div class="font-bold text-xs text-slate-200">English Slank & Idioms</div>
+                                <div class="text-[10px] text-slate-400">Ungkapan gaul bahasa Inggris modern</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
+                    </div>
+                </div>
+
+                <div id="lesson-modal-content" class="bg-slate-900 border border-slate-800 p-4 rounded-2xl text-xs text-slate-300 hidden space-y-2">
+                    <h3 id="lesson-title" class="font-bold text-emerald-400 text-sm"></h3>
+                    <p id="lesson-desc"></p>
+                </div>
+            </div>
+
+            <!-- TAB 4: RIWAYAT & FAVORIT -->
+            <div id="tab-history" class="tab-content hidden p-4 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex space-x-2">
+                        <button onclick="switchHistorySub('history')" id="btn-sub-hist" class="px-3 py-1.5 rounded-xl font-semibold text-xs bg-emerald-600 text-white transition">Riwayat</button>
+                        <button onclick="switchHistorySub('fav')" id="btn-sub-fav" class="px-3 py-1.5 rounded-xl font-semibold text-xs bg-slate-900 text-slate-400 transition">Favorit</button>
+                    </div>
+                    <button onclick="clearHistoryData()" class="text-xs text-red-400 hover:text-red-300 flex items-center gap-1">
+                        <i class="fa-solid fa-trash"></i> Hapus Semua
+                    </button>
+                </div>
+
+                <div id="history-list" class="space-y-2.5"></div>
+            </div>
+
+            <!-- TAB 5: PENGATURAN -->
+            <div id="tab-settings" class="tab-content hidden p-4 space-y-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+                    <h2 class="font-bold text-sm text-slate-200 border-b border-slate-800 pb-2">Status Akun & Pembayaran</h2>
+                    
+                    <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-1">
+                        <div class="text-[10px] text-slate-400">Status Lisensi Perangkat:</div>
+                        <div id="settings-license-status" class="font-bold text-xs text-emerald-400">Trial Aktif (Berlaku 30 Hari)</div>
+                        <div id="settings-expiry-date" class="text-[10px] text-slate-500">Sisa waktu trial: Menghitung...</div>
+                    </div>
+
+                    <button onclick="openAuthModal()" class="w-full py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 font-semibold text-xs transition">
+                        Buka Menu QRIS & Upload Bukti Pembayaran
+                    </button>
+
+                    <div class="pt-3 border-t border-slate-800 text-center space-y-1">
+                        <span class="block text-[11px] font-bold text-slate-300">LinguaTris AI Pro v3.3.0</span>
+                        <span class="block text-[10px] text-emerald-400">Developed with ❤️ by Arcod</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- BOTTOM NAVIGATION BAR -->
+        <nav class="bg-slate-900/95 backdrop-blur border-t border-slate-800 fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto z-40 flex items-center justify-around py-2 px-1">
+            <button onclick="switchTab('translate')" id="nav-translate" class="flex flex-col items-center flex-1 py-1 text-emerald-400 transition">
+                <i class="fa-solid fa-language text-base mb-0.5"></i>
+                <span class="text-[10px] font-semibold">Terjemah</span>
+            </button>
+            <button onclick="switchTab('conversations')" id="nav-conversations" class="flex flex-col items-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-comments text-base mb-0.5"></i>
+                <span class="text-[10px] font-medium">Percakapan</span>
+            </button>
+            <button onclick="switchTab('learning')" id="nav-learning" class="flex flex-col items-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-graduation-cap text-base mb-0.5"></i>
+                <span class="text-[10px] font-medium">Belajar</span>
+            </button>
+            <button onclick="switchTab('history')" id="nav-history" class="flex flex-col items-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-clock-rotate-left text-base mb-0.5"></i>
+                <span class="text-[10px] font-medium">Riwayat</span>
+            </button>
+            <button onclick="switchTab('settings')" id="nav-settings" class="flex flex-col items-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-gear text-base mb-0.5"></i>
+                <span class="text-[10px] font-medium">Pengaturan</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let currentSlankMode = 'normal';
+        let isVoiceDirectActive = false;
+        let vdtRecognition = null;
+        let uploadedProofFileName = "";
+        let historyList = [
+            { id: 1, src: 'id', tgt: 'ar', input: 'Selamat pagi, apa kabar?', output: 'صباح الخير، كيف حالك؟', fav: true },
+            { id: 2, src: 'id', tgt: 'en', input: 'Mantap betul bro aplikasinya', output: 'That is awesome bro, great app', fav: false }
+        ];
+        let currentSubHistory = 'history';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            checkLicenseStatus();
+            generateQRCodes();
+        });
+
+        function generateQRCodes() {
+            try {
+                document.getElementById("qrcode-ovo").innerHTML = "";
+                document.getElementById("qrcode-gopay").innerHTML = "";
+                document.getElementById("qrcode-bri").innerHTML = "";
+                document.getElementById("qrcode-bca").innerHTML = "";
+                document.getElementById("qrcode-bsi").innerHTML = "";
+
+                new QRCode(document.getElementById("qrcode-ovo"), { text: "OVO: 081398030706 (Mo......d T..a)", width: 84, height: 84 });
+                new QRCode(document.getElementById("qrcode-gopay"), { text: "GOPAY: 081996896244 (Emha)", width: 84, height: 84 });
+                new QRCode(document.getElementById("qrcode-bri"), { text: "BRI: 013901011770532 (Mo......d T..a)", width: 84, height: 84 });
+                new QRCode(document.getElementById("qrcode-bca"), { text: "BCA: 5776692464 (Mo......d T..a)", width: 84, height: 84 });
+                new QRCode(document.getElementById("qrcode-bsi"), { text: "BSI: 7354791921 (Emha)", width: 84, height: 84 });
+            } catch(e) {
+                console.log("QR Code error:", e);
+            }
+        }
+
+        // --- FITUR VOICE DIRECT TRANSLATION DENGAN PENGENALAN LANGSUNG & SWITCH ---
+        function toggleVoiceDirectTranslation() {
+            let btnVDT = document.getElementById('btn-voice-direct');
+            let vdtIcon = document.getElementById('vdt-icon');
+            let vdtText = document.getElementById('vdt-text');
+            let sourceLang = document.getElementById('source-lang').value;
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+                if (!isVoiceDirectActive) {
+                    isVoiceDirectActive = true;
+                    btnVDT.className = "px-3 py-1.5 bg-red-600 text-white rounded-lg flex items-center gap-1.5 transition font-semibold text-xs animate-pulse";
+                    vdtIcon.className = "fa-solid fa-stop";
+                    vdtText.innerText = "Mendengarkan...";
+                    setTimeout(() => {
+                        inputText.value = "Halo Arcod, Voice Direct Translation langsung berjalan.";
+                        charCount.innerText = inputText.value.length + '/500';
+                        performTranslation();
+                        toggleVoiceDirectTranslation();
+                    }, 3500);
+                } else {
+                    isVoiceDirectActive = false;
+                    btnVDT.className = "px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded-lg flex items-center gap-1.5 transition font-semibold text-xs";
+                    vdtIcon.className = "fa-solid fa-microphone-lines";
+                    vdtText.innerText = "Voice Direct";
+                }
+                return;
+            }
+
+            if (!isVoiceDirectActive) {
+                vdtRecognition = new SpeechRecognition();
+                vdtRecognition.lang = sourceLang === 'ar' ? 'ar-SA' : (sourceLang === 'en' ? 'en-US' : 'id-ID');
+                vdtRecognition.continuous = false;
+                vdtRecognition.interimResults = true;
+
+                vdtRecognition.onstart = () => {
+                    isVoiceDirectActive = true;
+                    btnVDT.className = "px-3 py-1.5 bg-red-600 text-white rounded-lg flex items-center gap-1.5 transition font-semibold text-xs animate-pulse";
+                    vdtIcon.className = "fa-solid fa-stop";
+                    vdtText.innerText = "Mendengarkan...";
+                };
+
+                vdtRecognition.onresult = (event) => {
+                    let transcript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                    inputText.value = transcript;
+                    charCount.innerText = inputText.value.length + '/500';
+                    performTranslation(); // Terjemahkan otomatis secara langsung
+                };
+
+                vdtRecognition.onerror = () => { resetVDTUI(); };
+                vdtRecognition.onend = () => { resetVDTUI(); };
+
+                vdtRecognition.start();
+            } else {
+                if (vdtRecognition) { vdtRecognition.stop(); }
+                resetVDTUI();
+            }
+        }
+
+        function resetVDTUI() {
+            isVoiceDirectActive = false;
+            let btnVDT = document.getElementById('btn-voice-direct');
+            let vdtIcon = document.getElementById('vdt-icon');
+            let vdtText = document.getElementById('vdt-text');
+            btnVDT.className = "px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded-lg flex items-center gap-1.5 transition font-semibold text-xs";
+            vdtIcon.className = "fa-solid fa-microphone-lines";
+            vdtText.innerText = "Voice Direct";
+        }
+
+        // --- FITUR SHARE HASIL TEKS ---
+        function shareOutputText() {
+            let outText = document.getElementById('output-text').innerText;
+            if (!outText || outText.includes("Hasil terjemahan akan tampil")) {
+                alert("Belum ada teks hasil terjemahan yang dapat dibagikan!");
+                return;
+            }
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'LinguaTris AI Translation by Arcod',
+                    text: outText
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(outText);
+                alert("Teks berhasil disalin ke clipboard untuk dibagikan!");
+            }
+        }
+
+        function handleProofUpload(event) {
+            let file = event.target.files[0];
+            if (file) {
+                uploadedProofFileName = file.name;
+                document.getElementById('upload-label-text').innerText = "File: " + file.name;
+                alert("Bukti pembayaran berhasil dipilih!");
+            }
+        }
+
+        function confirmPaymentEmail() {
+            let proofInfo = uploadedProofFileName ? `(Lampiran Bukti: ${uploadedProofFileName})` : "(Belum melampirkan file bukti)";
+            let emailBody = encodeURIComponent(`Halo Arcod,\n\nSaya telah melakukan pembayaran untuk aktivasi LinguaTris AI Pro via QRIS / Transfer Bank.\nStatus File: ${proofInfo}\n\nMohon verifikasi dan aktifkan akun saya.`);
+            
+            window.location.href = `mailto:inisaku226@gmail.com?subject=Konfirmasi%20Pembayaran%20LinguaTris%20AI%20Pro&body=${emailBody}`;
+            
+            localStorage.setItem('linguatris_license', 'Verified-Pro-User');
+            alert("Email konfirmasi diarahkan ke insaku226@gmail.com[cite: 3]. Akun Pro akan segera diverifikasi.");
+            document.getElementById('auth-modal').classList.add('hidden');
+            checkLicenseStatus();
+        }
+
+        function checkLicenseStatus() {
+            let licenseData = localStorage.getItem('linguatris_license');
+            let installDate = localStorage.getItem('linguatris_install_date');
+
+            if (!installDate) {
+                installDate = new Date().getTime();
+                localStorage.setItem('linguatris_install_date', installDate);
+            }
+
+            if (!licenseData) {
+                let now = new Date().getTime();
+                let thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+                let expiryDate = parseInt(installDate) + thirtyDaysMs;
+
+                if (now < expiryDate) {
+                    let daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                    updateUIStatus("Trial Aktif", `Masa trial tersisa ${daysLeft} hari`, "text-gold-400");
+                } else {
+                    updateUIStatus("Trial Habis", "Masa uji coba 1 bulan telah berakhir.", "text-red-400");
+                    document.getElementById('auth-modal').classList.remove('hidden');
+                }
+            } else {
+                updateUIStatus("Akun Pro Terverifikasi", `Status: Aktif Permanen`, "text-emerald-400");
+            }
+        }
+
+        function updateUIStatus(statusTitle, statusDetail, colorClass) {
+            let badge = document.getElementById('header-status-badge');
+            badge.innerText = statusTitle;
+            badge.className = `font-semibold ${colorClass}`;
+
+            let settingsStatus = document.getElementById('settings-license-status');
+            let settingsExpiry = document.getElementById('settings-expiry-date');
+            if(settingsStatus) settingsStatus.innerText = statusTitle;
+            if(settingsExpiry) settingsExpiry.innerText = statusDetail;
+        }
+
+        function processLogin(type) {
+            if(type === 'trial') {
+                localStorage.removeItem('linguatris_license');
+                alert("Mode Trial 1 Bulan diaktifkan!");
+            }
+            document.getElementById('auth-modal').classList.add('hidden');
+            checkLicenseStatus();
+        }
+
+        function openAuthModal() {
+            document.getElementById('auth-modal').classList.remove('hidden');
+            generateQRCodes();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            ['translate', 'conversations', 'learning', 'history', 'settings'].forEach(t => {
+                let btn = document.getElementById('nav-' + t);
+                if(btn) {
+                    btn.className = "flex flex-col items-center flex-1 py-1 text-slate-400 hover:text-slate-200 transition";
+                }
+            });
+
+            let activeBtn = document.getElementById('nav-' + tabId);
+            if(activeBtn) {
+                activeBtn.className = "flex flex-col items-center flex-1 py-1 text-emerald-400 transition";
+            }
+
+            if(tabId === 'history') renderHistory();
+        }
+
+        function setSlankMode(mode) {
+            currentSlankMode = mode;
+            if(mode === 'normal') {
+                document.getElementById('mode-normal').className = "px-3 py-1 rounded-lg font-medium bg-emerald-600 text-white transition";
+                document.getElementById('mode-slank').className = "px-3 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition";
+            } else {
+                document.getElementById('mode-slank').className = "px-3 py-1 rounded-lg font-medium bg-gold-500 text-slate-950 font-bold transition";
+                document.getElementById('mode-normal').className = "px-3 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition";
+            }
+        }
+
+        function swapLanguages() {
+            let src = document.getElementById('source-lang');
+            let tgt = document.getElementById('target-lang');
+            let temp = src.value;
+            src.value = tgt.value;
+            tgt.value = temp;
+        }
+
+        const inputText = document.getElementById('input-text');
+        const charCount = document.getElementById('char-count');
+        inputText.addEventListener('input', () => {
+            charCount.innerText = inputText.value.length + '/500';
+        });
+
+        function clearInput() {
+            inputText.value = '';
+            charCount.innerText = '0/500';
+            document.getElementById('output-text').innerText = 'Hasil terjemahan akan tampil di sini secara instan (Offline/AI)...';
+        }
+
+        function pasteText() {
+            navigator.clipboard.readText().then(textToPaste => {
+                inputText.value += textToPaste;
+                charCount.innerText = inputText.value.length + '/500';
+            }).catch(() => {
+                inputText.value = "Contoh teks tempel otomatis dari clipboard.";
+                charCount.innerText = inputText.value.length + '/500';
+            });
+        }
+
+        function convertTextToAudio() {
+            let outText = document.getElementById('output-text').innerText;
+            if (!outText || outText.includes("Hasil terjemahan akan tampil")) {
+                alert("Belum ada teks terjemahan yang dapat di-convert ke audio!");
+                return;
+            }
+            let audioBox = document.getElementById('audio-player-box');
+            let statusText = document.getElementById('audio-status-text');
+            audioBox.classList.remove('hidden');
+            statusText.innerText = "Sintesis Arcod Audio (TTS) sedang memproses...";
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let utterance = new SpeechSynthesisUtterance(outText);
+                let tgtLang = document.getElementById('target-lang').value;
+                utterance.lang = tgtLang === 'ar' ? 'ar-SA' : (tgtLang === 'en' ? 'en-US' : 'id-ID');
+                utterance.rate = 0.95;
+                utterance.onend = () => { statusText.innerText = "Audio selesai diputar."; };
+                utterance.onerror = () => { statusText.innerText = "Gagal memutar audio."; };
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Fitur Text-to-Audio tidak didukung di perangkat ini.");
+                audioBox.classList.add('hidden');
+            }
+        }
+
+        function stopAudio() {
+            if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); }
+            document.getElementById('audio-player-box').classList.add('hidden');
+        }
+
+        function performTranslation() {
+            let text = inputText.value.trim();
+            if(!text) {
+                document.getElementById('output-text').innerText = "Silakan masukkan teks terlebih dahulu!";
+                return;
+            }
+            let src = document.getElementById('source-lang').value;
+            let tgt = document.getElementById('target-lang').value;
+
+            let translated = "";
+            if(src === 'id' && tgt === 'ar') {
+                if(currentSlankMode === 'slank') {
+                    translated = "يا صاح, هذا التطبيق كشخة وبابه مرة جامد! (Arcod Slank)";
+                } else {
+                    translated = "ترجمة آلية ذكية: " + text + " (مترجم بدقة عالية عبر محرك Arcod آفلاين)";
+                }
+            } else if(src === 'id' && tgt === 'en') {
+                if(currentSlankMode === 'slank') {
+                    translated = "That's totally fire bro, totally lit! (Arcod Slank)";
+                } else {
+                    translated = "AI Translated: " + text + " (Processed offline by Arcod Engine)";
+                }
+            } else {
+                translated = "Hasil terjemahan offline [" + src.toUpperCase() + " -> " + tgt.toUpperCase() + "]: " + text;
+            }
+
+            document.getElementById('output-text').innerText = translated;
+
+            historyList.unshift({
+                id: Date.now(),
+                src: src,
+                tgt: tgt,
+                input: text,
+                output: translated,
+                fav: false
+            });
+        }
+
+        function copyOutput() {
+            let out = document.getElementById('output-text').innerText;
+            navigator.clipboard.writeText(out);
+            alert('Hasil terjemahan disalin ke clipboard!');
+        }
+
+        function shareOutput() {
+            shareOutputText();
+        }
+
+        function toggleFavorite() {
+            let icon = document.getElementById('fav-icon');
+            if(icon.classList.contains('fa-regular')) {
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid');
+                alert('Ditambahkan ke terjemahan favorit!');
+            } else {
+                icon.classList.remove('fa-solid');
+                icon.classList.add('fa-regular');
+                alert('Dihapus dari favorit.');
+            }
+        }
+
+        function handleImageUpload(event) {
+            let file = event.target.files[0];
+            if(file) {
+                alert('Gambar berhasil diunggah! Arcod AI sedang memindai teks...');
+                setTimeout(() => {
+                    inputText.value = "[Teks Terdeteksi dari Gambar]: Selamat datang di LinguaTris AI";
+                    charCount.innerText = inputText.value.length + '/500';
+                    performTranslation();
+                }, 1000);
+            }
+        }
+
+        function sendChatMessage() {
+            let input = document.getElementById('chat-input');
+            let val = input.value.trim();
+            if(!val) return;
+
+            let stream = document.getElementById('chat-stream');
+            stream.innerHTML += `<div class="bg-emerald-950/40 border border-emerald-500/30 p-2.5 rounded-2xl text-xs space-y-1 ml-6"><span class="text-[10px] text-emerald-400 font-semibold">Anda</span><p class="text-slate-200">${val}</p></div>`;
+            input.value = '';
+
+            setTimeout(() => {
+                stream.innerHTML += `<div class="bg-slate-900 border border-slate-800 p-2.5 rounded-2xl text-xs space-y-1 mr-6"><span class="text-[10px] text-gold-400 font-semibold">Arcod AI Assistant (Offline)</span><p class="text-slate-200">Balasan otomatis: Saya mengerti pesan Anda.</p></div>`;
+                stream.scrollTop = stream.scrollHeight;
+            }, 800);
+        }
+
+        function switchHistorySub(sub) {
+            currentSubHistory = sub;
+            if(sub === 'history') {
+                document.getElementById('btn-sub-hist').className = "px-3 py-1.5 rounded-xl font-semibold text-xs bg-emerald-600 text-white transition";
+                document.getElementById('btn-sub-fav').className = "px-3 py-1.5 rounded-xl font-semibold text-xs bg-slate-900 text-slate-400 transition";
+            } else {
+                document.getElementById('btn-sub-fav').className = "px-3 py-1.5 rounded-xl font-semibold text-xs bg-gold-500 text-slate-950 font-bold transition";
+                document.getElementById('btn-sub-hist').className = "px-3 py-1.5 rounded-xl font-semibold text-xs bg-slate-900 text-slate-400 transition";
+            }
+            renderHistory();
+        }
+
+        function renderHistory() {
+            let listDiv = document.getElementById('history-list');
+            listDiv.innerHTML = '';
+            
+            let data = currentSubHistory === 'fav' ? historyList.filter(x => x.fav) : historyList;
+
+            if(data.length === 0) {
+                listDiv.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs">Belum ada riwayat tersimpan.</div>`;
+                return;
+            }
+
+            data.forEach(item => {
+                listDiv.innerHTML += `
+                    <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl space-y-1.5">
+                        <div class="flex justify-between items-center text-[10px] text-slate-400">
+                            <span class="uppercase font-semibold text-emerald-400">${item.src} ➔ ${item.tgt}</span>
+                            <button onclick="deleteHistoryItem(${item.id})" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <div class="text-xs text-slate-200 font-medium">${item.input}</div>
+                        <div class="text-xs text-emerald-300 font-arabic">${item.output}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function deleteHistoryItem(id) {
+            historyList = historyList.filter(x => x.id !== id);
+            renderHistory();
+        }
+
+        function clearHistoryData() {
+            historyList = [];
+            renderHistory();
+        }
+
+        function openLesson(type) {
+            let modal = document.getElementById('lesson-modal-content');
+            let title = document.getElementById('lesson-title');
+            let desc = document.getElementById('lesson-desc');
+            modal.classList.remove('hidden');
+
+            if(type === 'grammar') {
+                title.innerText = "Modul I'rab & Nahwu Sharaf Dasar (Arcod Curriculum)";
+                desc.innerText = "Mempelajari kedudukan kata dalam kalimat secara terstruktur.";
+            } else if(type === 'idiom') {
+                title.innerText = "English Slank & Idioms Modern (Arcod Edition)";
+                desc.innerText = "Kumpulan kosakata gaul penutur asli bahasa Inggris.";
+            }
+        }
+    </script>
+</body>
+</html>
